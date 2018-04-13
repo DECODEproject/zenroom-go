@@ -1,0 +1,15 @@
+box: golang
+
+build:
+  steps:
+    - setup-go-workspace
+    - script:
+        name: test
+        code: |
+          go version
+          make test
+  after-steps:
+    - slack-notifier:
+        url: $SLACK_WEBHOOK_URL
+        channel: engineering-notificat
+        username: wercker
