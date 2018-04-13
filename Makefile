@@ -8,7 +8,7 @@ default: help
 
 .PHONY: test
 test:
-	$(GOTEST)
+	LD_LIBRARY_PATH=./zenroom $(GOTEST)
 
 # 'help' parses the Makefile and displays the help text
 help:
