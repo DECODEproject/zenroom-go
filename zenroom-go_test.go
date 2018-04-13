@@ -27,7 +27,7 @@ func TestBasicString(t *testing.T) {
 	}
 }
 
-func _TestCallStrings(t *testing.T) {
+func TestCallStrings(t *testing.T) {
 	testcases := []struct {
 		script string
 		data   string
@@ -58,7 +58,7 @@ func _TestCallStrings(t *testing.T) {
 	}
 }
 
-func _TestEncDec(t *testing.T) {
+func TestEncDec(t *testing.T) {
 	testcases := []struct {
 		script string
 		data   string
