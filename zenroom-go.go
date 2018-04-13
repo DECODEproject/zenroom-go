@@ -8,27 +8,29 @@ package zenroom
 #include <string.h>
 #include "zenroom.h"
 
-char* zenroom(char* script, char* keys, char* data){
-	if (freopen("/dev/null", "a", stderr) == NULL)
-		return NULL;
+const char *zenroom(char *script, char *keys, char *data) {
+  if (freopen("/dev/null", "a", stderr) == NULL)
+    return NULL;
 
-	char *sbuffer = (char *) malloc(sizeof(char) * 1024);
-	char *outbuffer = (char *) malloc(sizeof(char) * 1024);
+  char *outbuffer = (char *)malloc(sizeof(char) * 1024);
+  if (outbuffer == NULL) {
+    free(outbuffer);
+    return NULL;
+  }
 
-	if (sbuffer == NULL || outbuffer == NULL)
-		return NULL;
+  fflush(stdout);
+  setvbuf(stdout, outbuffer, _IOLBF, 1024);
 
-	fflush(stdout);
-	setvbuf(stdout, outbuffer, _IOFBF, 1024);
+  if (zenroom_exec(script, NULL, keys, data, 1) != 0) {
+    free(outbuffer);
+    return NULL;
+  }
 
-	if (zenroom_exec(script, NULL, keys, data, 1) != 0)
-		return NULL;
+  setbuf(stdout, NULL);
 
-	strncpy(sbuffer,outbuffer,1024);
-	setbuf(stdout, NULL);
-
-	fflush(stdout);
-	return outbuffer;
+  fflush(stdout);
+  //printf("len outbuffer=%zu\n", strlen(outbuffer));
+  return outbuffer;
 }
 */
 import (
