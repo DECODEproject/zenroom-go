@@ -12,14 +12,15 @@ const char *zenroom(char *script, char *keys, char *data) {
   if (freopen("/dev/null", "a", stderr) == NULL)
     return NULL;
 
-  char *outbuffer = (char *)malloc(sizeof(char) * 1024);
+  //char *outbuffer = (char *)malloc(sizeof(char) * MAX_STRING);
+  char *outbuffer = (char *)calloc(sizeof(char) * MAX_STRING, 0);
   if (outbuffer == NULL) {
     free(outbuffer);
     return NULL;
   }
 
   fflush(stdout);
-  setvbuf(stdout, outbuffer, _IOLBF, 1024);
+  setvbuf(stdout, outbuffer, _IOLBF, MAX_STRING);
 
   if (zenroom_exec(script, NULL, keys, data, 1) != 0) {
     free(outbuffer);
@@ -29,8 +30,8 @@ const char *zenroom(char *script, char *keys, char *data) {
   setbuf(stdout, NULL);
 
   fflush(stdout);
-  //printf("len outbuffer=%zu\n", strlen(outbuffer));
   return outbuffer;
+
 }
 */
 import (
