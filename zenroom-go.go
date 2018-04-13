@@ -5,14 +5,12 @@ package zenroom
 #cgo LDFLAGS: -L./zenroom -lzenroom
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "zenroom.h"
 
 const char *zenroom(char *script, char *keys, char *data) {
   if (freopen("/dev/null", "a", stderr) == NULL)
     return NULL;
 
-  //char *outbuffer = (char *)malloc(sizeof(char) * MAX_STRING);
   char *outbuffer = (char *)calloc(sizeof(char) * MAX_STRING, 0);
   if (outbuffer == NULL) {
     free(outbuffer);
