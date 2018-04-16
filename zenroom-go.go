@@ -7,6 +7,9 @@ package zenroom
 #include <stdlib.h>
 #include "zenroom.h"
 
+extern int zenroom_exec(char *script, char *conf, char *keys,
+                 char *data, int verbosity);
+
 const char *zenroom(char *script, char *keys, char *data) {
   if (freopen("/dev/null", "a", stderr) == NULL)
     return NULL;
@@ -39,7 +42,6 @@ import (
 import (
 	"fmt"
 	"strings"
-	"unsafe"
 )
 
 // Exec ...
@@ -49,7 +51,7 @@ func Exec(script, keys, data string) (string, error) {
 	}
 	pt := C.zenroom(C.CString(script), C.CString(keys), C.CString(data))
 
-	defer C.free(unsafe.Pointer(pt))
+	//defer C.free(unsafe.Pointer(pt))
 
 	if pt == nil {
 		return "", fmt.Errorf("error calling zenroom lib")
