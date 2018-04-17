@@ -106,6 +106,13 @@ func TestExecToBuf(t *testing.T) {
 	}
 }
 
+func BenchmarkZenroom(b *testing.B) {
+	script := `print ('hello')`
+	for n := 0; n < b.N; n++ {
+		_, _ = ExecToBuf(script, "", "")
+	}
+}
+
 /*
 func TestEncrypt(t *testing.T) {
 	genKeysScript := `
