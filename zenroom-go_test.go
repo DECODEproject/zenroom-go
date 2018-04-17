@@ -95,6 +95,16 @@ func TestEncDec(t *testing.T) {
 		}
 	}
 }
+func TestExecToBuf(t *testing.T) {
+	script := `print ('hello')`
+	s, err := ExecToBuf(script, "", "")
+	if err != nil {
+		t.Error(err)
+	}
+	if s != "hello" {
+		t.Errorf("results aren't the same %v!=%v", s, "hello")
+	}
+}
 
 /*
 func TestEncrypt(t *testing.T) {
