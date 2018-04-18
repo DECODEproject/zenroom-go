@@ -14,33 +14,6 @@ extern int zenroom_exec_tobuf(char *script, char *conf, char *keys,
                        char *data, int verbosity,
                        char *stdout_buf, size_t stdout_len,
                        char *stderr_buf, size_t stderr_len);
-
-const char *zenroom(char *script, char *keys, char *data) {
-  if (freopen("/dev/null", "a", stderr) == NULL)
-    return NULL;
-
-  char *outbuffer = (char *)calloc(sizeof(char) * MAX_STRING, 0);
-  if (outbuffer == NULL) {
-    free(outbuffer);
-    return NULL;
-  }
-
-  fflush(stdout);
-  setvbuf(stdout, outbuffer, _IOLBF, MAX_STRING);
-
-  if (zenroom_exec(script, NULL, keys, data, 1) != 0) {
-    free(outbuffer);
-    return NULL;
-  }
-
-  setbuf(stdout, NULL);
-
-  fflush(stdout);
-  return outbuffer;
-
-}
-
-
 */
 import (
 	"C"
@@ -48,28 +21,40 @@ import (
 
 import (
 	"fmt"
-	"strings"
 	"unsafe"
 )
 
 // maxString is zenroom defined buffer MAX_STRING size
-const maxString = C.MAX_STRING
+const maxString = 4096
 
-// Exec calls zenroom_exec_tobuf function with the next params
-// script: Lua script to execute
-// keys: Optional field mapped to KEYS zenroom global var
-// data: Optional field mapped to DATA zenroom global var
+// Exec calls zenroom_exec_tobuf function with the next params.
+// script: Lua script to execute.
+// keys: Optional field mapped to KEYS zenroom global var.
+// data: Optional field mapped to DATA zenroom global var.
 // Returns: a string with zenroom output and error which can be a zenroom stderr
 func Exec(script, keys, data string) (string, error) {
+
 	if len(script) == 0 {
 		return "", fmt.Errorf("no lua script to process")
 	}
+
+	var optKeys, optData *C.char
+
+	if keys != "" {
+		optKeys = C.CString(keys)
+		defer C.free(unsafe.Pointer(optKeys))
+	}
+	if data != "" {
+		optData = C.CString(data)
+		defer C.free(unsafe.Pointer(optData))
+	}
+
 	stdout := emptyString(maxString)
 	stderr := emptyString(maxString)
 	defer C.free(unsafe.Pointer(stdout))
 	defer C.free(unsafe.Pointer(stderr))
 
-	res := C.zenroom_exec_tobuf(C.CString(script), nil, C.CString(keys), C.CString(data), 1,
+	res := C.zenroom_exec_tobuf(C.CString(script), nil, optKeys, optData, 1,
 		(*C.char)(stdout), maxString,
 		(*C.char)(stderr), maxString)
 
@@ -92,20 +77,4 @@ func emptyString(size int) *C.char {
 	}
 	pp[size] = 0
 	return (*C.char)(p)
-}
-
-// _ExecStdStreams DEPRECATED calls OLD zenroom C wrapper
-func _ExecStdStreams(script, keys, data string) (string, error) {
-	if len(script) == 0 {
-		return "", fmt.Errorf("no lua script to process")
-	}
-	pt := C.zenroom(C.CString(script), C.CString(keys), C.CString(data))
-
-	//defer C.free(unsafe.Pointer(pt))
-
-	if pt == nil {
-		return "", fmt.Errorf("error calling zenroom lib")
-	}
-	res := strings.TrimSpace(C.GoString(pt))
-	return res, nil
 }
