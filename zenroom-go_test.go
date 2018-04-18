@@ -1,22 +1,10 @@
 package zenroom
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestBasicCall(t *testing.T) {
-	script := `print (1)`
-	res, err := Exec(script, "", "")
-	if err != nil {
-		t.Error(err)
-	}
-	if res != "1" {
-		t.Errorf("calling print (1), got:%s len:%d", res, len(res))
-	}
-}
-
-func TestBasicString(t *testing.T) {
 	script := `print (1)`
 	res, err := Exec(script, "", "")
 	if err != nil {
@@ -51,7 +39,7 @@ func TestCallStrings(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		fmt.Println("here", res)
+
 		if res != testcase.resp {
 			t.Errorf("calling [%s] got %s of len %d", testcase.script, res, len(res))
 		}
@@ -96,36 +84,28 @@ func TestEncDec(t *testing.T) {
 	}
 }
 
-/*
-func TestEncrypt(t *testing.T) {
-	genKeysScript := `
-	json = require'json'
-	ecdh = require'ecdh'	keypairs = json.encode({
-		uno=keyring:public():base64(),
-		dos=keyring:private():base64()
-	})
-	print(keypairs)
-	`
-	encodeScript := `
-	json = require'json'
-	ecdh = require'ecdh'
-
-	`
+func BenchmarkBasicPrint(b *testing.B) {
+	script := `print ('hello')`
+	for n := 0; n < b.N; n++ {
+		_, _ = Exec(script, "", "")
+	}
 }
 
-	keyring = ecdh.new()
-	keyring:keygen()
-
-	keypairs = json.encode({
-		uno=keyring:public():base64(),
-		dos=keyring:private():base64()
-	})
-	print(keypairs)
+func BenchmarkBasicKeyandEncrypt(b *testing.B) {
+	script := `
+	octet = require 'octet'
+	ecdh = require 'ecdh'
+	msg = octet.new(#DATA)
+	msg:string(DATA)
+	kr = ecdh.new()
+	kr:keygen()
+	sess = kr:session(kr:private(), kr:public())
+	encrypted = kr:(sess, msg)
+	print (encrypted)
 	`
-	encodeScript := `
-	json = require'json'
-	ecdh = require'ecdh'
+	data := `temperature:25.1`
 
-	`
+	for n := 0; n < b.N; n++ {
+		_, _ = Exec(script, "", data)
+	}
 }
-*/
