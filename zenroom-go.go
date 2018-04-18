@@ -52,35 +52,26 @@ import (
 	"unsafe"
 )
 
-// Exec ...
+// maxString is zenroom defined buffer MAX_STRING size
+const maxString = C.MAX_STRING
+
+// Exec calls zenroom_exec_tobuf function with the next params
+// script: Lua script to execute
+// keys: Optional field mapped to KEYS zenroom global var
+// data: Optional field mapped to DATA zenroom global var
+// Returns: a string with zenroom output and error which can be a zenroom stderr
 func Exec(script, keys, data string) (string, error) {
 	if len(script) == 0 {
 		return "", fmt.Errorf("no lua script to process")
 	}
-	pt := C.zenroom(C.CString(script), C.CString(keys), C.CString(data))
-
-	//defer C.free(unsafe.Pointer(pt))
-
-	if pt == nil {
-		return "", fmt.Errorf("error calling zenroom lib")
-	}
-	res := strings.TrimSpace(C.GoString(pt))
-	return res, nil
-}
-
-// ExecToBuf ...
-func ExecToBuf(script, keys, data string) (string, error) {
-	if len(script) == 0 {
-		return "", fmt.Errorf("no lua script to process")
-	}
-	stdout := emptyString(1024)
-	stderr := emptyString(1024)
+	stdout := emptyString(maxString)
+	stderr := emptyString(maxString)
 	defer C.free(unsafe.Pointer(stdout))
 	defer C.free(unsafe.Pointer(stderr))
 
 	res := C.zenroom_exec_tobuf(C.CString(script), nil, C.CString(keys), C.CString(data), 1,
-		(*C.char)(stdout), 1024,
-		(*C.char)(stderr), 1024)
+		(*C.char)(stdout), maxString,
+		(*C.char)(stderr), maxString)
 
 	if res != 0 {
 		return "", fmt.Errorf("error calling zenroom: %s ", C.GoString(stderr))
@@ -101,4 +92,20 @@ func emptyString(size int) *C.char {
 	}
 	pp[size] = 0
 	return (*C.char)(p)
+}
+
+// _ExecStdStreams DEPRECATED calls OLD zenroom C wrapper
+func _ExecStdStreams(script, keys, data string) (string, error) {
+	if len(script) == 0 {
+		return "", fmt.Errorf("no lua script to process")
+	}
+	pt := C.zenroom(C.CString(script), C.CString(keys), C.CString(data))
+
+	//defer C.free(unsafe.Pointer(pt))
+
+	if pt == nil {
+		return "", fmt.Errorf("error calling zenroom lib")
+	}
+	res := strings.TrimSpace(C.GoString(pt))
+	return res, nil
 }
