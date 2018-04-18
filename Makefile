@@ -4,12 +4,17 @@ GOCMD = go
 GOBUILD = $(GOCMD) build
 GOINSTALL = $(GOCMD) install
 GOTEST = $(GOCMD) test -v -covermode=atomic
+GOBENCH = $(GOCMD) test -benchmem -run=. -bench ^BenchmarkZenroom$
+
 default: help
 
-.PHONY: test
-test:
+test: ## Testing suite
 	LD_LIBRARY_PATH=./zenroom $(GOTEST)
+.PHONY: test
 
+benchmark: ## Run Benchmarks
+	LD_LIBRARY_PATH=./zenroom $(GOBENCH)
+.PHONY: benchmark
 # 'help' parses the Makefile and displays the help text
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
