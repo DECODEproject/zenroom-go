@@ -1,7 +1,6 @@
 package zenroom
 
 /*
-#cgo CFLAGS: -I./zenroom
 #cgo LDFLAGS: -L./zenroom -lzenroom
 #include <stdio.h>
 #include <stdlib.h>
