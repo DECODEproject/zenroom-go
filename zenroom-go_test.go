@@ -4,19 +4,7 @@ import (
 	"testing"
 )
 
-/*
-func _TestBasicCall(t *testing.T) {
-	script := `print (1)`
-	res, err := Exec(script, "", "")
-	if err != nil {
-		t.Error(err)
-	}
-	if res != "1" {
-		t.Errorf("calling print (1), got:%s len:%d", res, len(res))
-	}
-}
-
-func _TestBasicString(t *testing.T) {
+func TestBasicCall(t *testing.T) {
 	script := `print (1)`
 	res, err := Exec(script, "", "")
 	if err != nil {
@@ -51,14 +39,14 @@ func TestCallStrings(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		fmt.Println("here", res)
+
 		if res != testcase.resp {
 			t.Errorf("calling [%s] got %s of len %d", testcase.script, res, len(res))
 		}
 	}
 }
 
-func TestEncDec(t *testing.T) {
+func _TestEncDec(t *testing.T) {
 	testcases := []struct {
 		script string
 		data   string
@@ -95,25 +83,19 @@ func TestEncDec(t *testing.T) {
 		}
 	}
 }
-*/
-func TestExecToBuf(t *testing.T) {
-	script := `print ('hello')`
-	s, err := Exec(script, "", "")
-	if err != nil {
-		t.Error(err)
-	}
-	if s != "hello" {
-		t.Errorf("results aren't the same %v!=%v", s, "hello")
-	}
-}
 
-func BenchmarkZenroom(b *testing.B) {
+func BenchmarkBasicPrint(b *testing.B) {
 	script := `print ('hello')`
 	for n := 0; n < b.N; n++ {
-		_, _ = ExecToBuf(script, "", "")
+		_, _ = Exec(script, "", "")
 	}
 }
 
+/*
+func BenchmarBasicEncrypt(b *testing.B) {
+
+}
+*/
 /*
 func TestEncrypt(t *testing.T) {
 	genKeysScript := `
