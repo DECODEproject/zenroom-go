@@ -46,7 +46,7 @@ func TestCallStrings(t *testing.T) {
 	}
 }
 
-func _TestEncDec(t *testing.T) {
+func TestEncDec(t *testing.T) {
 	testcases := []struct {
 		script string
 		data   string
@@ -91,41 +91,21 @@ func BenchmarkBasicPrint(b *testing.B) {
 	}
 }
 
-/*
-func BenchmarBasicEncrypt(b *testing.B) {
+func BenchmarkBasicKeyandEncrypt(b *testing.B) {
+	script := `
+	octet = require 'octet'
+	ecdh = require 'ecdh'
+	msg = octet.new(#DATA)
+	msg:string(DATA)
+	kr = ecdh.new()
+	kr:keygen()
+	sess = kr:session(kr:private(), kr:public())
+	encrypted = kr:(sess, msg)
+	print (encrypted)
+	`
+	data := `temperature:25.1`
 
+	for n := 0; n < b.N; n++ {
+		_, _ = Exec(script, "", data)
+	}
 }
-*/
-/*
-func TestEncrypt(t *testing.T) {
-	genKeysScript := `
-	json = require'json'
-	ecdh = require'ecdh'	keypairs = json.encode({
-		uno=keyring:public():base64(),
-		dos=keyring:private():base64()
-	})
-	print(keypairs)
-	`
-	encodeScript := `
-	json = require'json'
-	ecdh = require'ecdh'
-
-	`
-}
-
-	keyring = ecdh.new()
-	keyring:keygen()
-
-	keypairs = json.encode({
-		uno=keyring:public():base64(),
-		dos=keyring:private():base64()
-	})
-	print(keypairs)
-	`
-	encodeScript := `
-	json = require'json'
-	ecdh = require'ecdh'
-
-	`
-}
-*/

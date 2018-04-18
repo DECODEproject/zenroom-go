@@ -4,7 +4,7 @@ GOCMD = go
 GOBUILD = $(GOCMD) build
 GOINSTALL = $(GOCMD) install
 GOTEST = $(GOCMD) test -v -covermode=atomic
-GOBENCH = $(GOCMD) test -benchmem -run=. -bench ^BenchmarkZenroom$
+GOBENCH = $(GOCMD) test -benchmem -bench=.
 
 default: help
 
