@@ -17,13 +17,13 @@ extern int zenroom_exec_tobuf(char *script, char *conf, char *keys,
 */
 import (
 	"C"
-
-	_ "github.com/thingful/zenroom-go/lib"
 )
 
 import (
 	"fmt"
 	"unsafe"
+
+	_ "github.com/thingful/zenroom-go/lib"
 )
 
 // maxString is zenroom defined buffer MAX_STRING size
