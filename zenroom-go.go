@@ -2,7 +2,7 @@ package zenroom
 
 /*
 #cgo CFLAGS: -IC:${SRCDIR}
-#cgo LDFLAGS: ${SRCDIR}/lib/libzenroom.a
+#cgo LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroom
 #include <stdio.h>
 #include <stdlib.h>
 #include "zenroom.h"
