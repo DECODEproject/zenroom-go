@@ -17,6 +17,8 @@ extern int zenroom_exec_tobuf(char *script, char *conf, char *keys,
 */
 import (
 	"C"
+
+	_ "github.com/thingful/zenroom-go/lib"
 )
 
 import (
