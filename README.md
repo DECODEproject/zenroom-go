@@ -9,11 +9,8 @@ Zenroom Binding for go
 * Install zenroom bindings
 ``` go get github.com/thingful/zenroom-go```
 
-* Ensure to have installed the contents of zenroom folder in /usr/local/lib or /usr/lib
-
-* Run ` sudo ldconfig` 
-
 * Have Fun!
+
 ```
 package main
 
@@ -24,17 +21,25 @@ import (
 	"github.com/thingful/zenroom-go"
 )
 
-func main() {
-	script := `print("holass")`
-    keys := ""
-    data := ""
-	res, err := zenroom.Exec(script, keys, data)
+	genKeysScript := []byte(`
+		octet = require 'octet'
+		ecdh = require 'ecdh'
+		json = require 'json'
+		keyring = ecdh.new('ec25519')
+		keyring:keygen()
+		
+		output = json.encode({
+			public = keyring:public():base64(),
+			private = keyring:private():base64()
+		})
+		print(output)
+	`)
+	keys, err := zenroom.Exec(genKeysScript, nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Keys: %s", keys)
 
-	fmt.Println(res)
-}
  ```
 
  * Zenroom documentation https://zenroom.dyne.org/
