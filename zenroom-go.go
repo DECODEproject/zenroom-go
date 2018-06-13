@@ -5,6 +5,7 @@ package zenroom
 #cgo LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroom
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "zenroom.h"
 
 extern int zenroom_exec(char *script, char *conf, char *keys,
@@ -40,15 +41,12 @@ func Exec(script, keys, data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("no lua script to process")
 	}
 	cScript = (*C.char)(unsafe.Pointer(&script[0]))
-	defer C.free(unsafe.Pointer(cScript))
 
 	if keys != nil {
 		optKeys = (*C.char)(unsafe.Pointer(&keys[0]))
-		defer C.free(unsafe.Pointer(optKeys))
 	}
 	if data != nil {
 		optData = (*C.char)(unsafe.Pointer(&data[0]))
-		defer C.free(unsafe.Pointer(optData))
 	}
 
 	stdout := emptyString(maxString)
@@ -64,7 +62,7 @@ func Exec(script, keys, data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("error calling zenroom: %s ", C.GoString(stderr))
 	}
 
-	return C.GoBytes(unsafe.Pointer(stdout), C.int(unsafe.Sizeof(stdout))), nil
+	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout))), nil
 }
 
 // reimplementation of https://golang.org/src/strings/strings.go?s=13172:13211#L522
