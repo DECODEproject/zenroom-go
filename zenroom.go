@@ -23,6 +23,8 @@ import (
 import (
 	"fmt"
 	"unsafe"
+
+	_ "github.com/thingful/zenroom-go/lib"
 )
 
 // maxString is zenroom defined buffer MAX_STRING size
