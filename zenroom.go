@@ -5,6 +5,7 @@ package zenroom
 #cgo LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroom
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "zenroom.h"
 
 extern int zenroom_exec(char *script, char *conf, char *keys,
@@ -34,21 +35,20 @@ const maxString = 4096
 // keys: Optional field mapped to KEYS zenroom global var.
 // data: Optional field mapped to DATA zenroom global var.
 // Returns: a string with zenroom output and error which can be a zenroom stderr
-func Exec(script, keys, data string) (string, error) {
+func Exec(script, keys, data []byte) ([]byte, error) {
 
-	if len(script) == 0 {
-		return "", fmt.Errorf("no lua script to process")
+	var cScript, optKeys, optData *C.char
+
+	if script == nil {
+		return nil, fmt.Errorf("no lua script to process")
 	}
+	cScript = (*C.char)(unsafe.Pointer(&script[0]))
 
-	var optKeys, optData *C.char
-
-	if keys != "" {
-		optKeys = C.CString(keys)
-		defer C.free(unsafe.Pointer(optKeys))
+	if keys != nil {
+		optKeys = (*C.char)(unsafe.Pointer(&keys[0]))
 	}
-	if data != "" {
-		optData = C.CString(data)
-		defer C.free(unsafe.Pointer(optData))
+	if data != nil {
+		optData = (*C.char)(unsafe.Pointer(&data[0]))
 	}
 
 	stdout := emptyString(maxString)
@@ -56,15 +56,15 @@ func Exec(script, keys, data string) (string, error) {
 	defer C.free(unsafe.Pointer(stdout))
 	defer C.free(unsafe.Pointer(stderr))
 
-	res := C.zenroom_exec_tobuf(C.CString(script), nil, optKeys, optData, 1,
+	res := C.zenroom_exec_tobuf(cScript, nil, optKeys, optData, 1,
 		(*C.char)(stdout), maxString,
 		(*C.char)(stderr), maxString)
 
 	if res != 0 {
-		return "", fmt.Errorf("error calling zenroom: %s ", C.GoString(stderr))
+		return nil, fmt.Errorf("error calling zenroom: %s ", C.GoString(stderr))
 	}
 
-	return C.GoString(stdout), nil
+	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout))), nil
 }
 
 // reimplementation of https://golang.org/src/strings/strings.go?s=13172:13211#L522
