@@ -9,6 +9,10 @@ Zenroom Binding for go
 * Install zenroom bindings
 ``` go get github.com/thingful/zenroom-go```
 
+* Ensure to have installed the contents of zenroom folder in /usr/local/lib or /usr/lib	
+
+* Run ` sudo ldconfig` 	
+
 * Have Fun!
 
 ```
