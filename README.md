@@ -2,20 +2,23 @@
 
 [![wercker status](https://app.wercker.com/status/87881dcb0b0ab25390300f91b96a9bf3/s/master "wercker status")](https://app.wercker.com/project/byKey/87881dcb0b0ab25390300f91b96a9bf3)
 
-Zenroom Binding for go
+Zenroom Binding for Go
 
-## How to use
+## Introduction
 
-* Install zenroom bindings
-``` go get github.com/thingful/zenroom-go```
+Zenroom is a brand new virtual machine for fast cryptographic operations on Elliptic Curves. The Zenroom VM has no external dependencies, includes a cutting edge selection of C99 libraries and builds a small executable ready to run on: desktop, embedded, mobile, cloud and browsers (webassembly). This library adds a CGO wrapper for Zenroom, which aims to make the Zenroom VM easy to use from Go.
 
-* Ensure to have installed the contents of zenroom folder in /usr/local/lib or /usr/lib	
+## Installation
 
-* Run ` sudo ldconfig` 	
+Currently the bindings are only available for Linux machines, but if this is your current environment you should be able to just do:
 
-* Have Fun!
-
+```bash
+$ go get github.com/thingful/zenroom-go
 ```
+
+## Usage
+
+```go
 package main
 
 import (
@@ -26,19 +29,17 @@ import (
 )
 
 	genKeysScript := []byte(`
-		octet = require 'octet'
-		ecdh = require 'ecdh'
-		json = require 'json'
 		keyring = ecdh.new('ec25519')
 		keyring:keygen()
 		
-		output = json.encode({
+		output = JSON.encode({
 			public = keyring:public():base64(),
 			private = keyring:private():base64()
 		})
 		print(output)
 	`)
-	keys, err := zenroom.Exec(genKeysScript, nil, nil)
+	
+	keys, err := zenroom.Exec(genKeysScript)
 	if err != nil {
 		log.Fatal(err)
 	}
