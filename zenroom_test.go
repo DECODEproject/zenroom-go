@@ -1,6 +1,7 @@
 package zenroom_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 
 func TestBasicCall(t *testing.T) {
 	script := []byte(`print (1)`)
-	res, err := zenroom.Exec(script)
+	res, err := zenroom.Exec(script, zenroom.WithVerbosity(3))
 	if err != nil {
 		t.Error(err)
 	}
@@ -161,8 +162,14 @@ func TestEncodeDecode(t *testing.T) {
 		t.Fatalf("Error encrypting message: %v", err)
 	}
 
-	if string(decryptedMessage) != `{"device_id":"anonymous","data":"secret message"}` {
-		t.Errorf("Unexpected response, expected: %s, got %s", `{"device_id":"anonymous","data":"secret message"}`, string(decryptedMessage))
+	var decrypted map[string]interface{}
+	err = json.Unmarshal(decryptedMessage, &decrypted)
+	if err != nil {
+		t.Fatalf("Error unmarshalling json: %v", err)
+	}
+
+	if decrypted["data"] != "secret message" {
+		t.Errorf("Unexpected decrypted output, got %s, expected %s", decrypted["data"], "secret message")
 	}
 }
 
