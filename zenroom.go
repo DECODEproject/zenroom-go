@@ -71,7 +71,7 @@ func WithConf(conf string) Option {
 
 // WithVerbosity is a configuration helper that allows the caller to specify how
 // verbose Zenroom should be with its output. The value of this configuration
-// must be an integer from 1 to 3 where 1 is the least verbose, and 3 is the
+// must be an integer from 1 to 3, where 1 is the least verbose, and 3 is the
 // most. The default if this value is not supplied is 1.
 func WithVerbosity(verbosity int) Option {
 	return func(c *config) {
