@@ -1,6 +1,7 @@
 # Zenroom-Go
 
 [![wercker status](https://app.wercker.com/status/87881dcb0b0ab25390300f91b96a9bf3/s/master "wercker status")](https://app.wercker.com/project/byKey/87881dcb0b0ab25390300f91b96a9bf3)
+[![GoDoc](https://godoc.org/github.com/thingful/zenroom-go?status.svg)](https://godoc.org/github.com/thingful/zenroom-go)
 
 Zenroom Binding for Go
 
@@ -46,5 +47,7 @@ import (
 	log.Printf("Keys: %s", keys)
 
  ```
+
+## More Documentation
 
  * Zenroom documentation https://zenroom.dyne.org/
