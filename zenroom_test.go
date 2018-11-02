@@ -2,6 +2,7 @@ package zenroom_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 
 func TestBasicCall(t *testing.T) {
 	script := []byte(`print (1)`)
-	res, err := zenroom.Exec(script, zenroom.WithVerbosity(3))
+	res, err := zenroom.Exec(script)
 	if err != nil {
 		t.Error(err)
 	}
@@ -193,4 +194,11 @@ func BenchmarkBasicKeyandEncrypt(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_, _ = zenroom.Exec(script, zenroom.WithData(data))
 	}
+}
+
+func ExampleExec() {
+	script := []byte(`print("hello")`)
+	res, _ := zenroom.Exec(script)
+	fmt.Println(string(res))
+	// Output: hello
 }
