@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/thingful/zenroom-go"
+	"github.com/DECODEproject/zenroom-go"
 )
 
 func TestBasicCall(t *testing.T) {

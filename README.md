@@ -14,7 +14,7 @@ Zenroom is a brand new virtual machine for fast cryptographic operations on Elli
 Currently the bindings are only available for Linux machines, but if this is your current environment you should be able to just do:
 
 ```bash
-$ go get github.com/thingful/zenroom-go
+$ go get github.com/DECODEproject/zenroom-go
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/thingful/zenroom-go"
+	"github.com/DECODEproject/zenroom-go"
 )
 
 	genKeysScript := []byte(`
