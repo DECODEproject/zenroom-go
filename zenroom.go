@@ -1,3 +1,6 @@
+// Package zenroom is a CGO wrapper for the Zenroom virtual machine, which aims
+// to make Zenroom easily usable from Go programs. Currently the C binary we
+// wrap is only available for Linux.
 package zenroom
 
 // #cgo CFLAGS: -IC:${SRCDIR}
@@ -18,7 +21,7 @@ import (
 // maxString is zenroom defined buffer MAX_STRING size
 const maxString = 4096
 
-// config is an unexpected config struct used to handle the functional variadic
+// config is an unexported config struct used to handle the functional variadic
 // configuration options defined below.
 type config struct {
 	Keys      []byte
