@@ -16,6 +16,9 @@ import (
 import (
 	"fmt"
 	"unsafe"
+
+	// dummy import to include binary in dependencies
+	_ "github.com/DECODEproject/zenroom-go/lib"
 )
 
 // maxString is zenroom defined buffer MAX_STRING size
