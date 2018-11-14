@@ -22,32 +22,38 @@ func TestBasicCall(t *testing.T) {
 
 func TestCallStrings(t *testing.T) {
 	testcases := []struct {
+		label  string
 		script []byte
 		data   []byte
 		resp   []byte
 	}{
 		{
+			label:  "string variable",
 			script: []byte(`hello = 'Hello World!' print(hello)`),
 			resp:   []byte("Hello World!"),
 		},
 		{
+			label:  "naked string",
 			script: []byte(`print('hello')`),
 			resp:   []byte("hello"),
 		},
 		{
+			label:  "number",
 			script: []byte(`print(123)`),
 			resp:   []byte("123"),
 		},
 	}
 	for _, testcase := range testcases {
-		res, err := zenroom.Exec(testcase.script, zenroom.WithData(testcase.data))
-		if err != nil {
-			t.Error(err)
-		}
+		t.Run(testcase.label, func(t *testing.T) {
+			res, err := zenroom.Exec(testcase.script, zenroom.WithData(testcase.data))
+			if err != nil {
+				t.Error(err)
+			}
 
-		if !reflect.DeepEqual(res, testcase.resp) {
-			t.Errorf("calling [%s] got %s of len %d", testcase.script, res, len(res))
-		}
+			if !reflect.DeepEqual(res, testcase.resp) {
+				t.Errorf("calling [%s] got %s of len %d", testcase.script, res, len(res))
+			}
+		})
 	}
 }
 
