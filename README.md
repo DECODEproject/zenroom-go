@@ -1,6 +1,6 @@
 # Zenroom-Go
 
-[![wercker status](https://app.wercker.com/status/87881dcb0b0ab25390300f91b96a9bf3/s/master "wercker status")](https://app.wercker.com/project/byKey/87881dcb0b0ab25390300f91b96a9bf3)
+[![Build Status](https://travis-ci.org/DECODEproject/zenroom-go.svg?branch=master)](https://travis-ci.org/DECODEproject/zenroom-go)
 [![GoDoc](https://godoc.org/github.com/DECODEproject/zenroom-go?status.svg)](https://godoc.org/github.com/DECODEproject/zenroom-go)
 
 Zenroom Binding for Go
@@ -51,3 +51,7 @@ import (
 ## More Documentation
 
  * Zenroom documentation https://zenroom.dyne.org/
+ 
+## Contributors
+
+The original Go bindings for Zenroom were created by [@chespinoza](https://github.com/chespinoza), later updates by [@smulube](https://github.com/smulube).
