@@ -60,100 +60,99 @@ func TestCallStrings(t *testing.T) {
 func TestEncodeDecode(t *testing.T) {
 	encryptKeys := []byte(`
 	{
- 		"device_id": "anonymous",
- 		"community_id": "smartcitizens",
+ 		"device_token": "abc123",
+ 		"community_id": "foo",
  		"community_pubkey": "BBLewg4VqLR38b38daE7Fj\/uhr543uGrEpyoPFgmFZK6EZ9g2XdK\/i65RrSJ6sJ96aXD3DJHY3Me2GJQO9\/ifjE="
 	}
 	`)
 
-	data := []byte(`secret message`)
+	data := []byte(`{"msg": "secret"}`)
 
 	encryptScript := []byte(`
-	curve = 'ed25519'
+-- Encryption script for DECODE IoT Pilot
+curve = 'ed25519'
 
-	keys_schema = SCHEMA.Record {
-		device_id        = SCHEMA.String,
-		community_id     = SCHEMA.String,
-		community_pubkey = SCHEMA.String
-	}
+-- data schema to validate input
+keys_schema = SCHEMA.Record {
+  device_token     = SCHEMA.String,
+  community_id     = SCHEMA.String,
+  community_pubkey = SCHEMA.String
+}
 
-	payload_schema = SCHEMA.Record {
-		device_id = SCHEMA.String,
-		data      = SCHEMA.String
-	}
+-- import and validate KEYS data
+keys = read_json(KEYS, keys_schema)
 
-	output_schema = SCHEMA.Record {
-		device_pubkey = SCHEMA.String,
-		community_id  = SCHEMA.String,
-		payload       = SCHEMA.String
-	}
+-- generate a new device keypair every time
+device_key = ECDH.keygen(curve)
 
-	keys = read_json(KEYS, keys_schema)
+-- read the payload we will encrypt
+payload = read_json(DATA)
 
-	devkey = ECDH.keygen(curve)
+-- The device's public key, community_id and the curve type are tranmitted in
+-- clear inside the header, which is authenticated AEAD
+header = {}
+header['device_pubkey'] = device_key:public():base64()
+header['community_id'] = keys['community_id']
 
-	payload = {}
-	payload['device_id'] = keys['device_id']
-	payload['data']      = DATA
-	validate(payload, payload_schema)
+-- encrypt the data, and build our output object
+output = ECDH.encrypt(
+  device_key,
+  base64(keys.community_pubkey),
+  MSG.pack(payload), MSG.pack(header)
+)
 
-	header = {}
-	header['device_pubkey'] = devkey:public():base64()
-	header['community_id'] = keys['community_id']
+output = map(output, base64)
+output.zenroom = VERSION
+output.encoding = 'base64'
+output.curve = curve
 
-	output = ECDH.encrypt(
-		devkey,
-		base64(keys.community_pubkey),
-		MSG.pack(payload),
-		MSG.pack(header)
-	)
-
-	output = map(output, O.to_base64)
-	output.zenroom = VERSION
-	output.encoding = 'base64'
-	output.curve = curve
-
-	print(JSON.encode(output))
-	`)
+print(JSON.encode(output))
+`)
 
 	decryptKeys := []byte(`
-	{
-		"community_seckey": "D19GsDTGjLBX23J281SNpXWUdu+oL6hdAJ0Zh6IrRHA="
-	}
-	`)
+{
+	"community_seckey": "D19GsDTGjLBX23J281SNpXWUdu+oL6hdAJ0Zh6IrRHA="
+}
+`)
 
 	decryptScript := []byte(`
-	keys_schema = SCHEMA.Record { community_seckey = SCHEMA.String }
+-- Decryption script for DECODE IoT Pilot
 
-	data_schema = SCHEMA.Record {
-   	text     = SCHEMA.string,
-   	iv       = SCHEMA.string,
-   	header   = SCHEMA.string,
-   	checksum = SCHEMA.string
-	}
+-- data schemas
+keys_schema = SCHEMA.Record {
+  community_seckey = SCHEMA.String
+}
 
-	payload_schema = SCHEMA.Record {
-  	device_id   = SCHEMA.String,
-  	data        = SCHEMA.String
-	}
+data_schema = SCHEMA.Record {
+  header   = SCHEMA.String,
+  encoding = SCHEMA.String,
+  text     = SCHEMA.String,
+  curve    = SCHEMA.String,
+  zenroom  = SCHEMA.String,
+  checksum = SCHEMA.String,
+  iv       = SCHEMA.String
+}
 
-	data = read_json(DATA) -- TODO: data_schema validation
-	keys = read_json(KEYS, keys_schema)
-	head = OCTET.msgunpack( base64(data.header) )
+-- read and validate data
+keys = read_json(KEYS, keys_schema)
+data = read_json(DATA, data_schema)
+-- print(JSON.encode(data))
 
-	dashkey = ECDH.new()
-	dashkey:private( base64(keys.community_seckey) )
+header = MSG.unpack(base64(data.header):str())
 
-	payload,ck = ECDH.decrypt(dashkey,
-  	base64( head.device_pubkey ),
-   	map(data, base64))
+-- print(JSON.encode(header))
 
-	validate(payload, payload_schema)
+community_key = ECDH.new()
+community_key:private(base64(keys.community_seckey))
 
--- print("Header:")
--- content(msgunpack(payload.header) )
-	print(JSON.encode(OCTET.msgunpack(payload.text) ))
-	`)
+payload, ck = ECDH.decrypt(
+  community_key,
+  base64(header.device_pubkey),
+  map(data, base64)
+)
+
+print(JSON.encode(MSG.unpack(payload.text:str())))
+`)
 
 	encryptedMessage, err := zenroom.Exec(encryptScript, zenroom.WithData(data), zenroom.WithKeys(encryptKeys))
 	if err != nil {
@@ -175,7 +174,7 @@ func TestEncodeDecode(t *testing.T) {
 		t.Fatalf("Error unmarshalling json: %v", err)
 	}
 
-	if decrypted["data"] != "secret message" {
+	if decrypted["msg"] != "secret" {
 		t.Errorf("Unexpected decrypted output, got %s, expected %s", decrypted["data"], "secret message")
 	}
 }
