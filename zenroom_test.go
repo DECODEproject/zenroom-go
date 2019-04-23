@@ -37,11 +37,6 @@ func TestCallStrings(t *testing.T) {
 			script: []byte(`print('hello')`),
 			resp:   []byte("hello"),
 		},
-		{
-			label:  "number",
-			script: []byte(`print(123)`),
-			resp:   []byte("123"),
-		},
 	}
 	for _, testcase := range testcases {
 		t.Run(testcase.label, func(t *testing.T) {
@@ -94,14 +89,16 @@ header = {}
 header['device_pubkey'] = device_key:public():base64()
 header['community_id'] = keys['community_id']
 
--- encrypt the data, and build our output object
-output = ECDH.encrypt(
-  device_key,
-  base64(keys.community_pubkey),
-  MSG.pack(payload), MSG.pack(header)
-)
+iv = RNG.new():octet(16)
+header['iv'] = iv:base64()
 
-output = map(output, base64)
+-- encrypt the data, and build our output object
+local session = device_key:session(base64(keys.community_pubkey))
+local head = str(MSG.pack(header))
+local out = { header = head }
+out.text, out.checksum = ECDH.aead_encrypt(session, str(MSG.pack(payload)), iv, head)
+
+output = map(out, base64)
 output.zenroom = VERSION
 output.encoding = 'base64'
 output.curve = curve
@@ -118,6 +115,9 @@ print(JSON.encode(output))
 	decryptScript := []byte(`
 -- Decryption script for DECODE IoT Pilot
 
+-- curve used
+curve = 'ed25519'
+
 -- data schemas
 keys_schema = SCHEMA.Record {
   community_seckey = SCHEMA.String
@@ -129,29 +129,24 @@ data_schema = SCHEMA.Record {
   text     = SCHEMA.String,
   curve    = SCHEMA.String,
   zenroom  = SCHEMA.String,
-  checksum = SCHEMA.String,
-  iv       = SCHEMA.String
+  checksum = SCHEMA.String
 }
 
 -- read and validate data
 keys = read_json(KEYS, keys_schema)
 data = read_json(DATA, data_schema)
--- print(JSON.encode(data))
 
 header = MSG.unpack(base64(data.header):str())
 
--- print(JSON.encode(header))
-
-community_key = ECDH.new()
+community_key = ECDH.new(curve)
 community_key:private(base64(keys.community_seckey))
 
-payload, ck = ECDH.decrypt(
-  community_key,
-  base64(header.device_pubkey),
-  map(data, base64)
-)
+session = community_key:session(base64(header.device_pubkey))
 
-print(JSON.encode(MSG.unpack(payload.text:str())))
+decode = { header = header }
+decode.text, decode.checksum = ECDH.aead_decrypt(session, base64(data.text), base64(header.iv), base64(data.header))
+
+print(JSON.encode(MSG.unpack(decode.text:str())))
 `)
 
 	encryptedMessage, err := zenroom.Exec(encryptScript, zenroom.WithData(data), zenroom.WithKeys(encryptKeys))
