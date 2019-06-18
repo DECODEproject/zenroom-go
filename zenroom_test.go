@@ -20,6 +20,16 @@ func TestBasicCall(t *testing.T) {
 	}
 }
 
+func TestVersion(t *testing.T) {
+	script := []byte(`print(VERSION)`)
+	res, err := zenroom.Exec(script)
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Printf("Zenroom version: %s\n", res)
+}
+
 func TestCallStrings(t *testing.T) {
 	testcases := []struct {
 		label  string
@@ -170,7 +180,7 @@ print(JSON.encode(MSG.unpack(decode.text:str())))
 	}
 
 	if decrypted["msg"] != "secret" {
-		t.Errorf("Unexpected decrypted output, got %s, expected %s", decrypted["data"], "secret message")
+		t.Errorf("Unexpected decrypted output, got %v, expected %v", decrypted["msg"], "secret")
 	}
 }
 
