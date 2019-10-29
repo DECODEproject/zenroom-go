@@ -4,10 +4,11 @@
 package zenroom
 
 // #cgo CFLAGS: -IC:${SRCDIR}
-// #cgo LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroomgo
+// #cgo linux LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroomgo
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include <string.h>
+// #include <math.h>
 // #include "zenroom.h"
 import (
 	"C"
