@@ -16,8 +16,8 @@ import (
 
 import (
 	"fmt"
-	"unsafe"
 	"strings"
+	"unsafe"
 
 	// dummy import to include binary in dependencies
 	_ "github.com/DECODEproject/zenroom-go/lib"
@@ -25,6 +25,14 @@ import (
 
 // maxString is zenroom defined buffer MAX_STRING size
 const maxString = 4096
+
+// type used for internal constant to decide between zencode and lua
+type execMethod int
+
+const (
+	lua execMethod = iota + 1
+	zencode
+)
 
 // config is an unexported config struct used to handle the functional variadic
 // configuration options defined below.
@@ -87,19 +95,46 @@ func WithVerbosity(verbosity int) Option {
 	}
 }
 
-// Exec is our primary public API method, and it is here that we call Zenroom's
-// zenroom_exec_tobuf function. This method attempts to pass a required script,
-// and some optional extra parameters to the Zenroom virtual machine, where
-// cryptographic operations are performed with the result being returned to the
-// caller. The method signature has been tweaked slightly from the original
-// function defined by Zenroom; rather than making all parameters required,
-// instead we have just included as a required parameter the input SCRIPT, while
-// all other properties must be supplied via one of the previously defined
-// Option helpers.
+// Exec allows calling the Zenroom virtual machine in order to execute Lua
+// scripts for cryptographic operations. It takes as parameters a mandatory
+// SCRIPT, and optional extra parameters which allow passing in custom DATA,
+// KEYS or configuration. We also allow setting the verbosity of the Zenroom
+// virtual machine if we wish to see additional output from Zenroom.
 //
 // Returns the output of the execution of the Zenroom virtual machine, or an
 // error.
 func Exec(script []byte, options ...Option) ([]byte, error) {
+	return execute(script, lua, options...)
+}
+
+// Zencode allows calling the Zenroom virtual machine in order to execute
+// Zencode scripts for cryptographic operations.It takes as parameters a
+// mandatory SCRIPT, and optional extra parameters which allow passing in custom
+// DATA, KEYS or configuration. We also allow setting the verbosity of the
+// Zenroom virtual machine if we wish to see additional output from Zenroom.
+//
+// Returns the output of the execution of the Zenroom virtual machine, or an
+// error.
+func Zencode(script []byte, options ...Option) ([]byte, error) {
+	return execute(script, zencode, options...)
+}
+
+// reimplementation of https://golang.org/src/strings/strings.go?s=13172:13211#L522
+func emptyString(size int) *C.char {
+	p := C.malloc(C.size_t(size + 1))
+	// largest array size that can be used on all architectures
+	pp := (*[1 << 30]byte)(p)
+	bp := copy(pp[:], " ")
+	for bp < size {
+		copy(pp[bp:], pp[:bp])
+		bp *= 2
+	}
+	pp[size] = 0
+	return (*C.char)(p)
+}
+
+// execute is our internal function for executing either Lua or Zencode scripts
+func execute(script []byte, method execMethod, options ...Option) ([]byte, error) {
 	var (
 		cScript                   *C.char
 		optKeys, optData, optConf *C.char
@@ -148,30 +183,27 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 	defer C.free(unsafe.Pointer(stdout))
 	defer C.free(unsafe.Pointer(stderr))
 
-	res := C.zenroom_exec_tobuf(
-		cScript,
-		optConf, optKeys, optData, C.int(conf.Verbosity),
-		stdout, maxString,
-		stderr, maxString,
-	)
+	var res int
+
+	if method == zencode {
+		res = C.zencode_exec_tobuf(
+			cScript,
+			optConf, optKeys, optData, C.int(conf.Verbosity),
+			stdout, maxString,
+			stderr, maxString,
+		)
+	} else {
+		res = C.zenroom_exec_tobuf(
+			cScript,
+			optConf, optKeys, optData, C.int(conf.Verbosity),
+			stdout, maxString,
+			stderr, maxString,
+		)
+	}
 
 	if res != 0 {
 		return nil, fmt.Errorf("error calling zenroom: '%s'", strings.TrimSpace(C.GoString(stderr)))
 	}
 
 	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout)-1)), nil
-}
-
-// reimplementation of https://golang.org/src/strings/strings.go?s=13172:13211#L522
-func emptyString(size int) *C.char {
-	p := C.malloc(C.size_t(size + 1))
-	// largest array size that can be used on all architectures
-	pp := (*[1 << 30]byte)(p)
-	bp := copy(pp[:], " ")
-	for bp < size {
-		copy(pp[bp:], pp[:bp])
-		bp *= 2
-	}
-	pp[size] = 0
-	return (*C.char)(p)
 }

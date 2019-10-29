@@ -216,6 +216,22 @@ print(JSON.encode(out))
 	}
 }
 
+func TestZencode(t *testing.T) {
+	script := []byte(`
+	Scenario 'simple': Create the keypair
+	Given that I am known as 'Alice'
+	When I create the keypair
+	Then print my data
+	`)
+
+	res, err := zenroom.Zencode(script)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	fmt.Println(string(res))
+}
+
 func BenchmarkBasicPrint(b *testing.B) {
 	script := []byte(`print ('hello')`)
 	for n := 0; n < b.N; n++ {
