@@ -9,25 +9,29 @@ import (
 	"github.com/DECODEproject/zenroom-go"
 )
 
-func TestBasicCall(t *testing.T) {
-	script := []byte(`print (1)`)
-	res, err := zenroom.Exec(script)
-	if err != nil {
-		t.Error(err)
+func TestMissingScript(t *testing.T) {
+	_, err := zenroom.Exec(nil)
+	if err == nil {
+		t.Error("Expected error for nil script, got nil")
 	}
-	if !reflect.DeepEqual(res, []byte("1")) {
-		t.Errorf("calling print (1), got:%s len:%d", res, len(res))
+
+	_, err = zenroom.Exec([]byte{})
+	if err == nil {
+		t.Errorf("Expected error for empty script, got nil")
 	}
 }
 
-func TestVersion(t *testing.T) {
-	script := []byte(`print(VERSION)`)
+func TestBasicCall(t *testing.T) {
+	script := []byte(`print(1)`)
+
 	res, err := zenroom.Exec(script)
 	if err != nil {
 		t.Error(err)
 	}
 
-	fmt.Printf("Zenroom version: %s\n", res)
+	if string(res) != "1" {
+		t.Errorf("unexpected response: expected 'hello world', got '%v'", res)
+}
 }
 
 func TestCallStrings(t *testing.T) {
