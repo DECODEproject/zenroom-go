@@ -17,6 +17,7 @@ import (
 import (
 	"fmt"
 	"unsafe"
+	"strings"
 
 	// dummy import to include binary in dependencies
 	_ "github.com/DECODEproject/zenroom-go/lib"
@@ -151,7 +152,7 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 		return nil, fmt.Errorf("error calling zenroom: %s ", strings.TrimSpace(C.GoString(stderr)))
 	}
 
-	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout))), nil
+	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout)-1)), nil
 }
 
 // reimplementation of https://golang.org/src/strings/strings.go?s=13172:13211#L522
