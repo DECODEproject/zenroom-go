@@ -66,6 +66,52 @@ func TestCallStrings(t *testing.T) {
 	}
 }
 
+func TestData(t *testing.T) {
+	script := []byte(`print(DATA)`)
+	data := []byte(`Hello data`)
+
+	res, err := zenroom.Exec(script, zenroom.WithData(data))
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if string(res) != "Hello data" {
+		t.Errorf("Unexpected output, expected 'Hello data', got '%s'", res)
+	}
+}
+
+func TestEmptyData(t *testing.T) {
+	script := []byte(`print(DATA)`)
+
+	_, err := zenroom.Exec(script, zenroom.WithData([]byte{}))
+	if err == nil {
+		t.Error("Expected error for empty data, got nil")
+	}
+}
+
+func TestKeys(t *testing.T) {
+	script := []byte(`print(KEYS)`)
+	keys := []byte(`Hello keys`)
+
+	res, err := zenroom.Exec(script, zenroom.WithKeys(keys))
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if string(res) != "Hello keys" {
+		t.Errorf("Unexpected output, expected 'Hello keys', got '%s'", res)
+	}
+}
+
+func TestEmptyKeys(t *testing.T) {
+	script := []byte(`print(KEYS)`)
+
+	_, err := zenroom.Exec(script, zenroom.WithKeys([]byte{}))
+	if err == nil {
+		t.Error("Expected error for empty keys, got nil")
+	}
+}
+
 func TestEncodeDecode(t *testing.T) {
 	encryptKeys := []byte(`
 	{

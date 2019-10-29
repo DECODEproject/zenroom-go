@@ -122,10 +122,18 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 	}
 
 	if conf.Keys != nil {
+		if len(conf.Keys) == 0 {
+			return nil, fmt.Errorf("empty KEYS error")
+		}
+
 		optKeys = (*C.char)(unsafe.Pointer(&conf.Keys[0]))
 	}
 
 	if conf.Data != nil {
+		if len(conf.Data) == 0 {
+			return nil, fmt.Errorf("empty DATA error")
+		}
+
 		optData = (*C.char)(unsafe.Pointer(&conf.Data[0]))
 	}
 
