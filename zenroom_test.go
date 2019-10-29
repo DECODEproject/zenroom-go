@@ -31,7 +31,7 @@ func TestBasicCall(t *testing.T) {
 
 	if string(res) != "1" {
 		t.Errorf("unexpected response: expected 'hello world', got '%v'", res)
-}
+	}
 }
 
 func TestCallStrings(t *testing.T) {
@@ -71,7 +71,7 @@ func TestEncodeDecode(t *testing.T) {
 	{
  		"device_token": "abc123",
  		"community_id": "foo",
- 		"community_pubkey": "BBLewg4VqLR38b38daE7Fj\/uhr543uGrEpyoPFgmFZK6EZ9g2XdK\/i65RrSJ6sJ96aXD3DJHY3Me2GJQO9\/ifjE="
+ 		"community_pubkey": "u64:BA2U3SX2mNFOTFA2K05tkHlZadaDHftkKedKXqFjERZ9df6VFuZIgF20q0kjn9uy2vaYSYx6zEm1zrwvV3vwovc"
 	}
 	`)
 
@@ -81,21 +81,14 @@ func TestEncodeDecode(t *testing.T) {
 -- Encryption script for DECODE IoT Pilot
 curve = 'ed25519'
 
--- data schema to validate input
-keys_schema = SCHEMA.Record {
-  device_token     = SCHEMA.String,
-  community_id     = SCHEMA.String,
-  community_pubkey = SCHEMA.String
-}
-
 -- import and validate KEYS data
-keys = read_json(KEYS, keys_schema)
+keys = JSON.decode(KEYS)
 
 -- generate a new device keypair every time
 device_key = ECDH.keygen(curve)
 
 -- read the payload we will encrypt
-payload = read_json(DATA)
+payload = JSON.decode(DATA)
 
 -- The device's public key, community_id and the curve type are tranmitted in
 -- clear inside the header, which is authenticated AEAD
@@ -103,65 +96,54 @@ header = {}
 header['device_pubkey'] = device_key:public():base64()
 header['community_id'] = keys['community_id']
 
-iv = RNG.new():octet(16)
-header['iv'] = iv:base64()
+iv = O.random(16)
+header['iv'] = iv:url64()
 
 -- encrypt the data, and build our output object
-local session = device_key:session(base64(keys.community_pubkey))
-local head = str(MSG.pack(header))
+local pub = ECDH.new(curve)
+pub:public(url64(keys.community_pubkey))
+
+local session = device_key:session(pub)
+local head = url64(JSON.encode(header))
 local out = { header = head }
-out.text, out.checksum = ECDH.aead_encrypt(session, str(MSG.pack(payload)), iv, head)
+out.text, out.checksum = ECDH.aead_encrypt(session, url64(JSON.encode(payload)), iv, head)
 
-output = map(out, base64)
-output.zenroom = VERSION
-output.encoding = 'base64'
-output.curve = curve
+-- output = map(out, base64)
+out.zenroom = VERSION
+out.curve = curve
 
-print(JSON.encode(output))
+print(JSON.encode(out))
 `)
 
 	decryptKeys := []byte(`
-{
-	"community_seckey": "D19GsDTGjLBX23J281SNpXWUdu+oL6hdAJ0Zh6IrRHA="
-}
-`)
+	{
+		"community_seckey": "u64:Cf88o0bEY3igf3mbnKTT7s7_huXDPvlATz7J1T7atZo"
+	}
+	`)
 
 	decryptScript := []byte(`
--- Decryption script for DECODE IoT Pilot
+	-- Decryption script for DECODE IoT Pilot
 
--- curve used
-curve = 'ed25519'
+	-- curve used
+	curve = 'ed25519'
 
--- data schemas
-keys_schema = SCHEMA.Record {
-  community_seckey = SCHEMA.String
-}
+	-- read and validate data
+	keys = JSON.decode(KEYS)
+	data = JSON.decode(DATA)
+	header = JSON.decode(data.header)
 
-data_schema = SCHEMA.Record {
-  header   = SCHEMA.String,
-  encoding = SCHEMA.String,
-  text     = SCHEMA.String,
-  curve    = SCHEMA.String,
-  zenroom  = SCHEMA.String,
-  checksum = SCHEMA.String
-}
+	community_key = ECDH.new(curve)
+	community_key:private(url64(keys.community_seckey))
 
--- read and validate data
-keys = read_json(KEYS, keys_schema)
-data = read_json(DATA, data_schema)
+	local pub = ECDH.new(curve)
+	pub:public(base64(header.device_pubkey))
+	session = community_key:session(pub)
 
-header = MSG.unpack(base64(data.header):str())
+	decode = { header = header }
+	decode.text, decode.checksum = ECDH.aead_decrypt(session, url64(data.text), url64(header.iv), url64(data.header))
 
-community_key = ECDH.new(curve)
-community_key:private(base64(keys.community_seckey))
-
-session = community_key:session(base64(header.device_pubkey))
-
-decode = { header = header }
-decode.text, decode.checksum = ECDH.aead_decrypt(session, base64(data.text), base64(header.iv), base64(data.header))
-
-print(JSON.encode(MSG.unpack(decode.text:str())))
-`)
+	print(decode.text:str())
+	`)
 
 	encryptedMessage, err := zenroom.Exec(encryptScript, zenroom.WithData(data), zenroom.WithKeys(encryptKeys))
 	if err != nil {
@@ -211,8 +193,8 @@ func BenchmarkBasicKeyandEncrypt(b *testing.B) {
 }
 
 func ExampleExec() {
-	script := []byte(`print("hello")`)
+	script := []byte(`print("hello world")`)
 	res, _ := zenroom.Exec(script)
 	fmt.Println(string(res))
-	// Output: hello
+	// Output: hello world
 }
