@@ -104,8 +104,7 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 		optKeys, optData, optConf *C.char
 	)
 
-	// capture the required script parameter
-	if script == nil {
+	if script == nil || len(script) == 0 {
 		return nil, fmt.Errorf("missing required script to process")
 	}
 	cScript = (*C.char)(unsafe.Pointer(&script[0]))
