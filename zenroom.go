@@ -148,16 +148,15 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 	defer C.free(unsafe.Pointer(stdout))
 	defer C.free(unsafe.Pointer(stderr))
 
-	C.zenroom_exec_tobuf(
+	res := C.zenroom_exec_tobuf(
 		cScript,
 		optConf, optKeys, optData, C.int(conf.Verbosity),
 		stdout, maxString,
 		stderr, maxString,
 	)
 
-	// return error if stderr has any non-whitespace content
-	if strings.TrimSpace(C.GoString(stderr)) != "" {
-		return nil, fmt.Errorf("error calling zenroom: %s ", strings.TrimSpace(C.GoString(stderr)))
+	if res != 0 {
+		return nil, fmt.Errorf("error calling zenroom: '%s'", strings.TrimSpace(C.GoString(stderr)))
 	}
 
 	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout)-1)), nil

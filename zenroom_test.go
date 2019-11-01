@@ -27,10 +27,11 @@ func TestBasicCall(t *testing.T) {
 	res, err := zenroom.Exec(script)
 	if err != nil {
 		t.Error(err)
+		t.FailNow()
 	}
 
 	if string(res) != "1" {
-		t.Errorf("unexpected response: expected 'hello world', got '%v'", res)
+		t.Errorf("unexpected response: expected '1', got '%v'", res)
 	}
 }
 
@@ -57,6 +58,7 @@ func TestCallStrings(t *testing.T) {
 			res, err := zenroom.Exec(testcase.script, zenroom.WithData(testcase.data))
 			if err != nil {
 				t.Error(err)
+				t.FailNow()
 			}
 
 			if !reflect.DeepEqual(res, testcase.resp) {
@@ -67,12 +69,14 @@ func TestCallStrings(t *testing.T) {
 }
 
 func TestData(t *testing.T) {
-	script := []byte(`print(DATA)`)
+	script := []byte(`print (DATA)`)
 	data := []byte(`Hello data`)
 
 	res, err := zenroom.Exec(script, zenroom.WithData(data))
 	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
+		t.Error(err)
+		t.FailNow()
+		// t.Errorf("Unexpected error: %v", err)
 	}
 
 	if string(res) != "Hello data" {
@@ -81,7 +85,7 @@ func TestData(t *testing.T) {
 }
 
 func TestEmptyData(t *testing.T) {
-	script := []byte(`print(DATA)`)
+	script := []byte(`print (DATA)`)
 
 	_, err := zenroom.Exec(script, zenroom.WithData([]byte{}))
 	if err == nil {
@@ -90,12 +94,13 @@ func TestEmptyData(t *testing.T) {
 }
 
 func TestKeys(t *testing.T) {
-	script := []byte(`print(KEYS)`)
+	script := []byte(`print (KEYS)`)
 	keys := []byte(`Hello keys`)
 
 	res, err := zenroom.Exec(script, zenroom.WithKeys(keys))
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
+		t.FailNow()
 	}
 
 	if string(res) != "Hello keys" {
@@ -104,7 +109,7 @@ func TestKeys(t *testing.T) {
 }
 
 func TestEmptyKeys(t *testing.T) {
-	script := []byte(`print(KEYS)`)
+	script := []byte(`print (KEYS)`)
 
 	_, err := zenroom.Exec(script, zenroom.WithKeys([]byte{}))
 	if err == nil {
