@@ -22,7 +22,7 @@ func TestMissingScript(t *testing.T) {
 }
 
 func TestBasicCall(t *testing.T) {
-	script := []byte(`print(1)`)
+	script := []byte(`print (1)`)
 
 	res, err := zenroom.Exec(script)
 	if err != nil {
@@ -44,12 +44,12 @@ func TestCallStrings(t *testing.T) {
 	}{
 		{
 			label:  "string variable",
-			script: []byte(`hello = 'Hello World!' print(hello)`),
+			script: []byte(`hello = 'Hello World!' print (hello)`),
 			resp:   []byte("Hello World!"),
 		},
 		{
 			label:  "naked string",
-			script: []byte(`print('hello')`),
+			script: []byte(`print ('hello')`),
 			resp:   []byte("hello"),
 		},
 	}
