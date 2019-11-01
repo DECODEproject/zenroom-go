@@ -4,7 +4,8 @@
 package zenroom
 
 // #cgo CFLAGS: -IC:${SRCDIR}
-// #cgo linux LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroomgo
+// #cgo linux LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroomgo_linux
+// #cgo darwin LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroomgo_darwin
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include <string.h>
