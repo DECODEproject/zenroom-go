@@ -17,7 +17,7 @@ func TestMissingScript(t *testing.T) {
 
 	_, err = zenroom.Exec([]byte{})
 	if err == nil {
-		t.Errorf("Expected error for empty script, got nil")
+		t.Error("Expected error for empty script, got nil")
 	}
 }
 
@@ -26,8 +26,7 @@ func TestBasicCall(t *testing.T) {
 
 	res, err := zenroom.Exec(script)
 	if err != nil {
-		t.Error(err)
-		t.FailNow()
+		t.Fatal(err)
 	}
 
 	if string(res) != "1" {
@@ -57,8 +56,7 @@ func TestCallStrings(t *testing.T) {
 		t.Run(testcase.label, func(t *testing.T) {
 			res, err := zenroom.Exec(testcase.script, zenroom.WithData(testcase.data))
 			if err != nil {
-				t.Error(err)
-				t.FailNow()
+				t.Fatal(err)
 			}
 
 			if !reflect.DeepEqual(res, testcase.resp) {
@@ -74,9 +72,7 @@ func TestData(t *testing.T) {
 
 	res, err := zenroom.Exec(script, zenroom.WithData(data))
 	if err != nil {
-		t.Error(err)
-		t.FailNow()
-		// t.Errorf("Unexpected error: %v", err)
+		t.Fatal(err)
 	}
 
 	if string(res) != "Hello data" {
@@ -99,8 +95,7 @@ func TestKeys(t *testing.T) {
 
 	res, err := zenroom.Exec(script, zenroom.WithKeys(keys))
 	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-		t.FailNow()
+		t.Fatal(err)
 	}
 
 	if string(res) != "Hello keys" {
