@@ -183,7 +183,7 @@ func execute(script []byte, method execMethod, options ...Option) ([]byte, error
 	defer C.free(unsafe.Pointer(stdout))
 	defer C.free(unsafe.Pointer(stderr))
 
-	var res int
+	var res C.int
 
 	if method == zencode {
 		res = C.zencode_exec_tobuf(
