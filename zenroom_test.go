@@ -239,8 +239,11 @@ func BenchmarkBasicKeyandEncrypt(b *testing.B) {
 }
 
 func ExampleExec() {
-	script := []byte(`print("hello world")`)
-	res, _ := zenroom.Exec(script)
+	script := []byte(`print ('hello world')`)
+	res, err := zenroom.Exec(script)
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(string(res))
 	// Output: hello world
 }
