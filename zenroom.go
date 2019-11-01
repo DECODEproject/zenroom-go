@@ -4,10 +4,11 @@
 package zenroom
 
 // #cgo CFLAGS: -IC:${SRCDIR}
-// #cgo LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroomgo
+// #cgo linux LDFLAGS: -L${SRCDIR}/lib -Wl,-rpath=${SRCDIR}/lib -lzenroomgo
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include <string.h>
+// #include <math.h>
 // #include "zenroom.h"
 import (
 	"C"
@@ -16,6 +17,7 @@ import (
 import (
 	"fmt"
 	"unsafe"
+	"strings"
 
 	// dummy import to include binary in dependencies
 	_ "github.com/DECODEproject/zenroom-go/lib"
@@ -103,8 +105,7 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 		optKeys, optData, optConf *C.char
 	)
 
-	// capture the required script parameter
-	if script == nil {
+	if script == nil || len(script) == 0 {
 		return nil, fmt.Errorf("missing required script to process")
 	}
 	cScript = (*C.char)(unsafe.Pointer(&script[0]))
@@ -121,10 +122,18 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 	}
 
 	if conf.Keys != nil {
+		if len(conf.Keys) == 0 {
+			return nil, fmt.Errorf("empty KEYS error")
+		}
+
 		optKeys = (*C.char)(unsafe.Pointer(&conf.Keys[0]))
 	}
 
 	if conf.Data != nil {
+		if len(conf.Data) == 0 {
+			return nil, fmt.Errorf("empty DATA error")
+		}
+
 		optData = (*C.char)(unsafe.Pointer(&conf.Data[0]))
 	}
 
@@ -147,10 +156,10 @@ func Exec(script []byte, options ...Option) ([]byte, error) {
 	)
 
 	if res != 0 {
-		return nil, fmt.Errorf("error calling zenroom: %s ", C.GoString(stderr))
+		return nil, fmt.Errorf("error calling zenroom: '%s'", strings.TrimSpace(C.GoString(stderr)))
 	}
 
-	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout))), nil
+	return C.GoBytes(unsafe.Pointer(stdout), C.int(C.strlen(stdout)-1)), nil
 }
 
 // reimplementation of https://golang.org/src/strings/strings.go?s=13172:13211#L522
